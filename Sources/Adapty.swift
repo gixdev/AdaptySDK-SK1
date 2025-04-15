@@ -44,7 +44,7 @@ public final class Adapty: Sendable {
             let productVendorIdsStorage = await ProductVendorIdsStorage()
         #endif
 
-        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *) {
+        if AdaptyConfiguration.storeKitVersion == .v2, #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *) {
             self.receiptManager = StoreKitReceiptManager(session: httpSession)
             self.transactionManager = SK2TransactionManager(session: httpSession)
             self.productsManager = SK2ProductsManager(apiKeyPrefix: apiKeyPrefix, session: httpSession, storage: productVendorIdsStorage)
@@ -61,7 +61,8 @@ public final class Adapty: Sendable {
             customerUserId: configuration.customerUserId
         )
 
-        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *) {
+        if AdaptyConfiguration.storeKitVersion == .v2,
+            #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *) {
             if !observerMode {
                 #if compiler(>=5.10)
                     let variationIdStorage = VariationIdStorage()

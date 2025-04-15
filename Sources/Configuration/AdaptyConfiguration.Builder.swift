@@ -35,7 +35,8 @@ extension AdaptyConfiguration {
                 proxy: builder.backendProxy ?? defaultBackend.proxy
             ),
             logLevel: builder.logLevel,
-            crossPlatformSDK: builder.crossPlatformSDK
+            crossPlatformSDK: builder.crossPlatformSDK,
+            storeKitVersion: builder.storeKitVersion ?? .v2,
         )
     }
 
@@ -53,7 +54,8 @@ extension AdaptyConfiguration {
             backendConfigsBaseUrl: nil,
             backendProxy: nil,
             logLevel: nil,
-            crossPlatformSDK: nil
+            crossPlatformSDK: nil,
+            storeKitVersion: nil
         )
     }
 }
@@ -76,6 +78,8 @@ public extension AdaptyConfiguration {
         public private(set) var logLevel: AdaptyLog.Level?
 
         package private(set) var crossPlatformSDK: (name: String, version: String)?
+        
+        public private(set) var storeKitVersion: StoreKitVersion?
 
         init(
             apiKey: String,
@@ -90,7 +94,8 @@ public extension AdaptyConfiguration {
             backendConfigsBaseUrl: URL?,
             backendProxy: (host: String, port: Int)?,
             logLevel: AdaptyLog.Level?,
-            crossPlatformSDK: (name: String, version: String)?
+            crossPlatformSDK: (name: String, version: String)?,
+            storeKitVersion: StoreKitVersion?
         ) {
             self.apiKey = apiKey
             self.customerUserId = customerUserId
@@ -105,6 +110,7 @@ public extension AdaptyConfiguration {
             self.backendProxy = backendProxy
             self.logLevel = logLevel
             self.crossPlatformSDK = crossPlatformSDK
+            self.storeKitVersion = storeKitVersion
         }
 
         /// Call this method to get the ``AdaptyConfiguration`` object.
@@ -196,6 +202,12 @@ public extension AdaptyConfiguration.Builder {
     @discardableResult
     package func with(crosplatformSDKName name: String, version: String) -> Self {
         crossPlatformSDK = (name: name, version: version)
+        return self
+    }
+    
+    @discardableResult
+    func with(storeKitVersion version: StoreKitVersion) -> Self {
+        storeKitVersion = version
         return self
     }
 }

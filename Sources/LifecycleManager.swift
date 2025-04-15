@@ -38,7 +38,7 @@ final class LifecycleManager {
 
     private func subscribeForStorefrontUpdate() {
         Task { @AdaptyActor [weak self] in
-            for await value in AdaptyStorefront.updates {
+            for await value in await AdaptyStorefront.updates {
                 self?.newStorefrontCountryAvailable = value.countryCode
             }
         }

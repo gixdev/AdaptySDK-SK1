@@ -21,14 +21,17 @@ public extension Adapty {
             methodName: .getPaywallProducts,
             logParams: ["placement_id": paywall.placementId]
         ) { sdk in
-            if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *) {
-                if let manager = sdk.productsManager as? SK2ProductsManager {
-                    return try await sdk.getSK2PaywallProducts(
-                        paywall: paywall,
-                        productsManager: manager
-                    )
+            switch AdaptyConfiguration.storeKitVersion {
+            case .v2:
+                if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *) {
+                    if let manager = sdk.productsManager as? SK2ProductsManager {
+                        return try await sdk.getSK2PaywallProducts(
+                            paywall: paywall,
+                            productsManager: manager
+                        )
+                    }
                 }
-            } else {
+            case .v1:
                 if let manager = sdk.productsManager as? SK1ProductsManager {
                     return try await sdk.getSK1PaywallProducts(
                         paywall: paywall,
@@ -36,6 +39,7 @@ public extension Adapty {
                     )
                 }
             }
+            
             return []
         }
     }
@@ -45,14 +49,17 @@ public extension Adapty {
             methodName: .getPaywallProductswithoutDeterminingOffer,
             logParams: ["placement_id": paywall.placementId]
         ) { sdk in
-            if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *) {
-                if let manager = sdk.productsManager as? SK2ProductsManager {
-                    return try await sdk.getSK2PaywallProductsWithoutOffers(
-                        paywall: paywall,
-                        productsManager: manager
-                    )
+            switch AdaptyConfiguration.storeKitVersion {
+            case .v2:
+                if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *) {
+                    if let manager = sdk.productsManager as? SK2ProductsManager {
+                        return try await sdk.getSK2PaywallProductsWithoutOffers(
+                            paywall: paywall,
+                            productsManager: manager
+                        )
+                    }
                 }
-            } else {
+            case .v1:
                 if let manager = sdk.productsManager as? SK1ProductsManager {
                     return try await sdk.getSK1PaywallProductsWithoutOffers(
                         paywall: paywall,
@@ -73,22 +80,26 @@ public extension Adapty {
         paywallName: String
     ) async throws -> AdaptyPaywallProduct {
         let sdk = try await Adapty.activatedSDK
-
-        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *) {
-            guard let manager = sdk.productsManager as? SK2ProductsManager else {
+        
+        switch await AdaptyConfiguration.storeKitVersion {
+        case .v2:
+            if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *) {
+                guard let manager = sdk.productsManager as? SK2ProductsManager else {
+                    throw AdaptyError.cantMakePayments()
+                }
+                return try await sdk.getSK2PaywallProduct(
+                    vendorProductId: vendorProductId,
+                    adaptyProductId: adaptyProductId,
+                    subscriptionOfferIdentifier: subscriptionOfferIdentifier,
+                    variationId: variationId,
+                    paywallABTestName: paywallABTestName,
+                    paywallName: paywallName,
+                    productsManager: manager
+                )
+            } else {
                 throw AdaptyError.cantMakePayments()
             }
-            return try await sdk.getSK2PaywallProduct(
-                vendorProductId: vendorProductId,
-                adaptyProductId: adaptyProductId,
-                subscriptionOfferIdentifier: subscriptionOfferIdentifier,
-                variationId: variationId,
-                paywallABTestName: paywallABTestName,
-                paywallName: paywallName,
-                productsManager: manager
-            )
-
-        } else {
+        case .v1:
             guard let manager = sdk.productsManager as? SK1ProductsManager else {
                 throw AdaptyError.cantMakePayments()
             }

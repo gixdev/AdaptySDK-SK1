@@ -40,7 +40,7 @@ extension Backend.Request {
             sessionIDHeaderKey: envorinment.sessionIdentifier,
             appInstallIdHeaderKey: envorinment.application.installationIdentifier,
             isObserveModeHeaderKey: configuration.observerMode ? "true" : "false",
-            storeKit2EnabledHeaderKey: Environment.StoreKit.storeKit2Enabled ? "enabled" : "unavailable",
+            storeKit2EnabledHeaderKey: configuration.storeKitVersion == .v2 ? "enabled" : "unavailable",
         ]
 
         if let ver = envorinment.application.version {

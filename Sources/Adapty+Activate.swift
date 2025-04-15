@@ -65,7 +65,8 @@ extension Adapty {
             AdaptyConfiguration.callbackDispatchQueue = configuration.callbackDispatchQueue // TODO: Refactoring
             AdaptyConfiguration.idfaCollectionDisabled = configuration.idfaCollectionDisabled // TODO: Refactoring
             AdaptyConfiguration.ipAddressCollectionDisabled = configuration.ipAddressCollectionDisabled // TODO: Refactoring
-
+            AdaptyConfiguration.storeKitVersion = StoreKitVersion.validated(configuration.storeKitVersion)
+                    
             let environment = await Environment.instance
             let backend = Backend(with: configuration, envorinment: environment)
 

@@ -27,22 +27,22 @@ public extension Adapty {
                 "product_id": product.vendorProductId,
             ]
         ) { sdk in
-
-            guard #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *) else {
+            switch AdaptyConfiguration.storeKitVersion {
+            case .v2:
+                guard let manager = sdk.sk2Purchaser else { throw AdaptyError.cantMakePayments() }
+                
+                return try await manager.makePurchase(
+                    profileId: sdk.profileStorage.profileId,
+                    product: product
+                )
+            case .v1:
                 guard let manager = sdk.sk1QueueManager else { throw AdaptyError.cantMakePayments() }
-
+                
                 return try await manager.makePurchase(
                     profileId: sdk.profileStorage.profileId,
                     product: product
                 )
             }
-
-            guard let manager = sdk.sk2Purchaser else { throw AdaptyError.cantMakePayments() }
-
-            return try await manager.makePurchase(
-                profileId: sdk.profileStorage.profileId,
-                product: product
-            )
         }
     }
 
