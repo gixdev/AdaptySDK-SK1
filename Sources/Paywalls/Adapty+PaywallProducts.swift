@@ -32,11 +32,13 @@ public extension Adapty {
                     }
                 }
             case .v1:
-                if let manager = sdk.productsManager as? SK1ProductsManager {
-                    return try await sdk.getSK1PaywallProducts(
-                        paywall: paywall,
-                        productsManager: manager
-                    )
+                if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *) {
+                    if let manager = sdk.productsManager as? SK1ProductsManager {
+                        return try await sdk.getSK1PaywallProducts(
+                            paywall: paywall,
+                            productsManager: manager
+                        )
+                    }
                 }
             }
             

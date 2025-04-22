@@ -5,6 +5,7 @@
 //  Created by Aleksei Valiano on 23.05.2023
 //
 
+import StoreKit
 import Foundation
 
 private let log = Log.sk1ProductManager
@@ -66,6 +67,7 @@ extension Adapty {
         )
     }
 
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
     func getSK1PaywallProducts(
         paywall: AdaptyPaywall,
         productsManager: SK1ProductsManager
@@ -106,15 +108,21 @@ extension Adapty {
         }
 
         if !vendorProductIds.isEmpty {
-            let introductoryOfferEligibility = await getIntroductoryOfferEligibility(vendorProductIds: vendorProductIds)
+            let sk2Products = try await Product.products(for: vendorProductIds)
+            let eligibilityMap = await buildEligibilityMap(for: sk2Products)
+            
             products = products.map {
                 guard !$0.determinedOffer else { return $0 }
-                return if let introductoryOffer = $0.product.subscriptionOffer(by: .introductory),
-                          introductoryOfferEligibility.contains($0.product.productIdentifier)
+                
+                let productId = $0.product.productIdentifier
+                let isEligible = eligibilityMap[productId] ?? false
+                
+                if isEligible,
+                   let introductoryOffer = $0.product.subscriptionOffer(by: .introductory)
                 {
-                    (product: $0.product, reference: $0.reference, offer: introductoryOffer, determinedOffer: true)
+                    return (product: $0.product, reference: $0.reference, offer: introductoryOffer, determinedOffer: true)
                 } else {
-                    (product: $0.product, reference: $0.reference, offer: nil, determinedOffer: true)
+                    return (product: $0.product, reference: $0.reference, offer: nil, determinedOffer: true)
                 }
             }
         }
@@ -129,6 +137,23 @@ extension Adapty {
                 paywallName: paywall.name
             )
         }
+    }
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
+    private func buildEligibilityMap(for products: [Product]) async -> [String: Bool] {
+        var map = [String: Bool]()
+        await withTaskGroup(of: (String, Bool).self) { group in
+            for product in products {
+                group.addTask {
+                    let eligible = await product.subscription?.isEligibleForIntroOffer ?? false
+                    return (product.id, eligible)
+                }
+            }
+            for await (id, eligible) in group {
+                map[id] = eligible
+            }
+        }
+        return map
     }
 
     private func promotionalOffer(_ offerId: String?, _ sk1Product: SK1Product) -> AdaptySubscriptionOffer? {
