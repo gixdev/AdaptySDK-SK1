@@ -39,10 +39,11 @@ struct AdaptyPaywallViewModifier<Placeholder, AlertItem>: ViewModifier where Ale
     private let didStartPurchase: ((AdaptyPaywallProduct) -> Void)?
     private let didFinishPurchase: ((AdaptyPaywallProduct, AdaptyPurchaseResult) -> Void)?
     private let didFailPurchase: (AdaptyPaywallProduct, AdaptyError) -> Void
+    private let didFinishWebPaymentNavigation: ((AdaptyPaywallProduct?, AdaptyError?) -> Void)?
     private let didStartRestore: (() -> Void)?
     private let didFinishRestore: (AdaptyProfile) -> Void
     private let didFailRestore: (AdaptyError) -> Void
-    private let didFailRendering: (AdaptyError) -> Void
+    private let didFailRendering: (AdaptyUIError) -> Void
     private let didFailLoadingProducts: ((AdaptyError) -> Bool)?
     private let didPartiallyLoadProducts: (([String]) -> Void)?
     private let showAlertItem: Binding<AlertItem?>
@@ -60,10 +61,11 @@ struct AdaptyPaywallViewModifier<Placeholder, AlertItem>: ViewModifier where Ale
         didStartPurchase: ((AdaptyPaywallProduct) -> Void)?,
         didFinishPurchase: ((AdaptyPaywallProduct, AdaptyPurchaseResult) -> Void)?,
         didFailPurchase: @escaping (AdaptyPaywallProduct, AdaptyError) -> Void,
+        didFinishWebPaymentNavigation: ((AdaptyPaywallProduct?, AdaptyError?) -> Void)? = nil,
         didStartRestore: (() -> Void)?,
         didFinishRestore: @escaping (AdaptyProfile) -> Void,
         didFailRestore: @escaping (AdaptyError) -> Void,
-        didFailRendering: @escaping (AdaptyError) -> Void,
+        didFailRendering: @escaping (AdaptyUIError) -> Void,
         didFailLoadingProducts: ((AdaptyError) -> Bool)?,
         didPartiallyLoadProducts: (([String]) -> Void)?,
         showAlertItem: Binding<AlertItem?>,
@@ -80,6 +82,7 @@ struct AdaptyPaywallViewModifier<Placeholder, AlertItem>: ViewModifier where Ale
         self.didStartPurchase = didStartPurchase
         self.didFinishPurchase = didFinishPurchase
         self.didFailPurchase = didFailPurchase
+        self.didFinishWebPaymentNavigation = didFinishWebPaymentNavigation
         self.didStartRestore = didStartRestore
         self.didFinishRestore = didFinishRestore
         self.didFailRestore = didFailRestore
@@ -103,6 +106,7 @@ struct AdaptyPaywallViewModifier<Placeholder, AlertItem>: ViewModifier where Ale
                 didStartPurchase: didStartPurchase,
                 didFinishPurchase: didFinishPurchase,
                 didFailPurchase: didFailPurchase,
+                didFinishWebPaymentNavigation: didFinishWebPaymentNavigation,
                 didStartRestore: didStartRestore,
                 didFinishRestore: didFinishRestore,
                 didFailRestore: didFailRestore,
@@ -185,10 +189,11 @@ public extension View {
         didStartPurchase: ((AdaptyPaywallProduct) -> Void)? = nil,
         didFinishPurchase: ((AdaptyPaywallProduct, AdaptyPurchaseResult) -> Void)? = nil,
         didFailPurchase: @escaping (AdaptyPaywallProduct, AdaptyError) -> Void,
+        didFinishWebPaymentNavigation: ((AdaptyPaywallProduct?, AdaptyError?) -> Void)? = nil,
         didStartRestore: (() -> Void)? = nil,
         didFinishRestore: @escaping (AdaptyProfile) -> Void,
         didFailRestore: @escaping (AdaptyError) -> Void,
-        didFailRendering: @escaping (AdaptyError) -> Void,
+        didFailRendering: @escaping (AdaptyUIError) -> Void,
         didFailLoadingProducts: ((AdaptyError) -> Bool)? = nil,
         didPartiallyLoadProducts: (([String]) -> Void)? = nil,
         showAlertItem: Binding<AlertItem?> = Binding<AdaptyIdentifiablePlaceholder?>.constant(nil),
@@ -207,6 +212,7 @@ public extension View {
                 didStartPurchase: didStartPurchase,
                 didFinishPurchase: didFinishPurchase,
                 didFailPurchase: didFailPurchase,
+                didFinishWebPaymentNavigation: didFinishWebPaymentNavigation,
                 didStartRestore: didStartRestore,
                 didFinishRestore: didFinishRestore,
                 didFailRestore: didFailRestore,

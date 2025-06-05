@@ -17,6 +17,8 @@ extension AdaptyConfiguration {
         let defaultBackend = switch builder.serverCluster ?? .default {
         case .eu:
             Backend.URLs.euPublicEnvironment
+        case .cn:
+            Backend.URLs.cnPublicEnvironment
         default:
             Backend.URLs.defaultPublicEnvironment
         }
@@ -194,13 +196,13 @@ public extension AdaptyConfiguration.Builder {
     }
 
     @discardableResult
-    func with(loglevel level: AdaptyLog.Level) -> Self {
+    func with(logLevel level: AdaptyLog.Level) -> Self {
         logLevel = level
         return self
     }
 
     @discardableResult
-    package func with(crosplatformSDKName name: String, version: String) -> Self {
+    package func with(crossplatformSDKName name: String, version: String) -> Self {
         crossPlatformSDK = (name: name, version: version)
         return self
     }

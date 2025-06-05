@@ -23,16 +23,17 @@ package final class AdaptyEventsHandler: ObservableObject {
 
     var didAppear: (() -> Void)?
     var didDisappear: (() -> Void)?
-    
+
     var didPerformAction: ((AdaptyUI.Action) -> Void)?
     var didSelectProduct: ((AdaptyPaywallProductWithoutDeterminingOffer) -> Void)?
     var didStartPurchase: ((AdaptyPaywallProduct) -> Void)?
     var didFinishPurchase: ((AdaptyPaywallProduct, AdaptyPurchaseResult) -> Void)?
     var didFailPurchase: ((AdaptyPaywallProduct, AdaptyError) -> Void)?
+    var didFinishWebPaymentNavigation: ((AdaptyPaywallProduct?, AdaptyError?) -> Void)?
     var didStartRestore: (() -> Void)?
     var didFinishRestore: ((AdaptyProfile) -> Void)?
     var didFailRestore: ((AdaptyError) -> Void)?
-    var didFailRendering: ((AdaptyError) -> Void)?
+    var didFailRendering: ((AdaptyUIError) -> Void)?
     var didFailLoadingProducts: ((AdaptyError) -> Bool)?
     var didPartiallyLoadProducts: (([String]) -> Void)?
 
@@ -43,6 +44,7 @@ package final class AdaptyEventsHandler: ObservableObject {
         self.didStartPurchase = nil
         self.didFinishPurchase = nil
         self.didFailPurchase = nil
+        self.didFinishWebPaymentNavigation = nil
         self.didStartRestore = nil
         self.didFinishRestore = nil
         self.didFailRestore = nil
@@ -78,7 +80,7 @@ package final class AdaptyEventsHandler: ObservableObject {
     }
 
     func event_didStartPurchase(product: AdaptyPaywallProduct) {
-        Log.ui.verbose("#\(logId)# makePurchase begin")
+        Log.ui.verbose("#\(logId)# event_didStartPurchase")
         didStartPurchase?(product)
     }
 
@@ -88,6 +90,18 @@ package final class AdaptyEventsHandler: ObservableObject {
     ) {
         Log.ui.verbose("#\(logId)# event_didFinishPurchase: \(product.vendorProductId)")
         didFinishPurchase?(product, purchaseResult)
+    }
+
+    func event_didFinishWebPaymentNavigation(
+        product: AdaptyPaywallProduct?,
+        error: AdaptyError?
+    ) {
+        if let error {
+            Log.ui.error("#\(logId)# event_didFinishWebPaymentNavigation: \(product?.vendorProductId ?? "null"), error: \(error)")
+        } else {
+            Log.ui.verbose("#\(logId)# event_didFinishWebPaymentNavigation: \(product?.vendorProductId ?? "null")")
+        }
+        didFinishWebPaymentNavigation?(product, error)
     }
 
     func event_didFailPurchase(
@@ -115,7 +129,7 @@ package final class AdaptyEventsHandler: ObservableObject {
 
     func event_didFailRendering(with error: AdaptyUIError) {
         Log.ui.error("#\(logId)# event_didFailRendering: \(error)")
-        didFailRendering?(AdaptyError(error))
+        didFailRendering?(error)
     }
 
     func event_didFailLoadingProducts(with error: AdaptyError) -> Bool {

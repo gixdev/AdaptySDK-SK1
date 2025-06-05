@@ -29,22 +29,39 @@ extension Adapty {
         trackEvent(.system(params))
     }
 
-    static func trackEventIfNeed(_ chosen: AdaptyPaywallChosen) {
+    static func trackEventIfNeed<Content: AdaptyPlacementContent>(_ chosen: AdaptyPlacementChosen<Content>) {
         guard case let .draw(draw) = chosen else {
             return
         }
 
-        Log.crossAB.verbose("-> trackEvent variationId = \(draw.paywall.variationId)")
-        
-        trackEvent(.paywallVariationAssigned(.init(
-            paywallVariationId: draw.paywall.variationId,
-            viewConfigurationId: draw.paywall.viewConfiguration?.id,
-            placementAudienceVersionId: draw.placementAudienceVersionId
-        )), for: draw.profileId)
+        let event: Event
+        if let paywall = draw.content as? AdaptyPaywall {
+            event = .paywallVariationAssigned(.init(
+                variationId: paywall.variationId,
+                viewConfigurationId: paywall.viewConfiguration?.id,
+                placementAudienceVersionId: draw.placementAudienceVersionId
+            ))
+
+            Log.crossAB.verbose("-> trackEvent paywallVariationAssigned variationId = \(paywall.variationId)")
+
+        } else if let onboarding = draw.content as? AdaptyOnboarding {
+            event = .onboardingVariationAssigned(.init(
+                variationId: onboarding.variationId,
+                placementAudienceVersionId: draw.placementAudienceVersionId
+            ))
+
+            Log.crossAB.verbose("-> trackEvent onboardingVariationAssigned variationId = \(onboarding.variationId)")
+
+        } else {
+            Log.crossAB.warn("-> Warnning: unknown content type for variationAssigned event, variationId = \(draw.content.variationId)")
+            return
+        }
+
+        trackEvent(event, for: draw.profileId)
     }
 
     package static func logShowPaywall(_ paywall: AdaptyPaywall, viewConfiguration: AdaptyViewConfiguration) {
-        trackEvent(.paywallShowed(.init(paywallVariationId: paywall.variationId, viewConfigurationId: viewConfiguration.id)))
+        trackEvent(.paywallShowed(.init(variationId: paywall.variationId, viewConfigurationId: viewConfiguration.id)))
     }
 }
 
@@ -74,7 +91,7 @@ public extension Adapty {
     ///  - Throws: An ``AdaptyError`` object
     nonisolated static func logShowPaywall(_ paywall: AdaptyPaywall) async throws {
         try await withActivatedSDK(methodName: .logShowPaywall) { _ in
-            try await _trackEvent(.paywallShowed(.init(paywallVariationId: paywall.variationId, viewConfigurationId: nil)))
+            try await _trackEvent(.paywallShowed(.init(variationId: paywall.variationId, viewConfigurationId: nil)))
         }
     }
 
@@ -106,16 +123,36 @@ public extension Adapty {
                 throw error
             }
 
+            try await _trackEvent(.legacyOnboardingScreenShowed(params))
+        }
+    }
+
+    package nonisolated static func logShowOnboarding(_ params: AdaptyOnboardingScreenShowedParameters) async throws {
+        try await withActivatedSDK(methodName: .logShowOnboardingScreen) { _ in
             try await _trackEvent(.onboardingScreenShowed(params))
         }
     }
 
+    /// Call this method to update the current user's refund data consent.
+    ///
+    /// Read more on the [Adapty Documentation](https://adapty.io/docs/refund-saver#obtain-user-consent)
+    ///
+    /// - Parameters:
+    ///   - consent: `Bool` value whether user gave the consent or not.
+    /// - Throws: An ``AdaptyError`` object
     nonisolated static func updateCollectingRefundDataConsent(_ consent: Bool) async throws {
         try await withActivatedSDK(methodName: .updateCollectingRefundDataConsent) { _ in
             try await _trackEvent(.сonsentToCollectingRefundData(.init(consent: consent)))
         }
     }
 
+    /// Call this method to set the refund preference individually for current user.
+    ///
+    /// Read more on the [Adapty Documentation](https://adapty.io/docs/refund-saver#set-refund-behavior-for-a-specific-user-in-the-dashboard)
+    ///
+    /// - Parameters:
+    ///   - refundPreference: ``AdaptyRefundPreference`` value.
+    /// - Throws: An ``AdaptyError`` object
     nonisolated static func updateRefundPreference(_ refundPreference: AdaptyRefundPreference) async throws {
         try await withActivatedSDK(methodName: .updateRefundPreference) { _ in
             try await _trackEvent(.refundPreference(.init(refundPreference: refundPreference)))

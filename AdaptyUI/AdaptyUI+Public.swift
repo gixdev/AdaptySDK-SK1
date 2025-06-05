@@ -166,7 +166,7 @@ public protocol AdaptyPaywallControllerDelegate: AnyObject {
     ///   - error: an ``AdaptyError`` object representing the error.
     func paywallController(
         _ controller: AdaptyPaywallController,
-        didFailRenderingWith error: AdaptyError
+        didFailRenderingWith error: AdaptyUIError
     )
 
     /// This method is invoked in case of errors during the products loading process.
@@ -187,6 +187,17 @@ public protocol AdaptyPaywallControllerDelegate: AnyObject {
     func paywallController(
         _ controller: AdaptyPaywallController,
         didPartiallyLoadProducts failedIds: [String]
+    )
+
+    /// This method is invoked when the web payment navigation is finished.
+    /// - Parameters:
+    ///   - controller: an ``AdaptyPaywallController`` within which the event occurred.
+    ///   - product: an ``AdaptyPaywallProduct`` of the purchase.
+    ///   - error: an ``AdaptyError`` object representing the error.
+    func paywallController(
+        _ controller: AdaptyPaywallController,
+        didFinishWebPaymentNavigation product: AdaptyPaywallProduct?,
+        error: AdaptyError?
     )
 }
 
@@ -228,7 +239,7 @@ public extension AdaptyUI {
             do {
                 sdk = try await Adapty.activatedSDK
             } catch {
-                let err = AdaptyUIError.adaptyNotActivatedError
+                let err = AdaptyUIError.adaptyNotActivated
                 Log.ui.error("AdaptyUI activate [\(stamp)] encountered an error: \(error).")
                 throw err
             }
@@ -239,7 +250,7 @@ public extension AdaptyUI {
         let sdk = try await task.value
 
         guard !AdaptyUI.isActivated else {
-            let err = AdaptyUIError.activateOnceError
+            let err = AdaptyUIError.activateOnce
             Log.ui.error("AdaptyUI activate [\(stamp)] encountered an error: \(err).")
             throw err
         }
@@ -280,43 +291,11 @@ public extension AdaptyUI {
         products: [AdaptyPaywallProduct]? = nil,
         observerModeResolver: AdaptyObserverModeResolver? = nil,
         tagResolver: AdaptyTagResolver? = nil,
-        timerResolver: AdaptyTimerResolver? = nil
-    ) async throws -> PaywallConfiguration {
-        guard AdaptyUI.isActivated else {
-            let err = AdaptyUIError.adaptyNotActivatedError
-            Log.ui.error("AdaptyUI getViewConfiguration error: \(err)")
-
-            throw err
-        }
-
-        let viewConfiguration = try await Adapty.getViewConfiguration(
-            paywall: paywall,
-            loadTimeout: loadTimeout
-        )
-
-        return PaywallConfiguration(
-            logId: Log.stamp,
-            paywall: paywall,
-            viewConfiguration: viewConfiguration,
-            products: products,
-            observerModeResolver: observerModeResolver,
-            tagResolver: tagResolver,
-            timerResolver: timerResolver,
-            assetsResolver: nil
-        )
-    }
-    
-    package static func getPaywallConfigurationWithAssets(
-        forPaywall paywall: AdaptyPaywall,
-        loadTimeout: TimeInterval? = nil,
-        products: [AdaptyPaywallProduct]? = nil,
-        observerModeResolver: AdaptyObserverModeResolver? = nil,
-        tagResolver: AdaptyTagResolver? = nil,
         timerResolver: AdaptyTimerResolver? = nil,
         assetsResolver: AdaptyAssetsResolver? = nil
     ) async throws -> PaywallConfiguration {
         guard AdaptyUI.isActivated else {
-            let err = AdaptyUIError.adaptyNotActivatedError
+            let err = AdaptyUIError.adaptyNotActivated
             Log.ui.error("AdaptyUI getViewConfiguration error: \(err)")
 
             throw err
@@ -351,7 +330,7 @@ public extension AdaptyUI {
         showDebugOverlay: Bool = false
     ) throws -> AdaptyPaywallController {
         guard AdaptyUI.isActivated else {
-            let err = AdaptyUIError.adaptyNotActivatedError
+            let err = AdaptyUIError.adaptyNotActivated
             Log.ui.error("AdaptyUI paywallController(for:) error: \(err)")
             throw err
         }

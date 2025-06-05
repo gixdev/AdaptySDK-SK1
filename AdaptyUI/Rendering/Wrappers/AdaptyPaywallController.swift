@@ -12,6 +12,17 @@ import SwiftUI
 import UIKit
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
+public extension AdaptyPaywallController {
+    var paywallPlacementId: String {
+        paywallConfiguration.paywallViewModel.paywall.placementId
+    }
+
+    var paywallVariationId: String {
+        paywallConfiguration.paywallViewModel.paywall.variationId
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
 public final class AdaptyPaywallController: UIViewController {
     public let id = UUID()
 
@@ -55,17 +66,17 @@ public final class AdaptyPaywallController: UIViewController {
         Log.ui.verbose("#\(logId)# viewDidLoad begin")
 
         view.backgroundColor = .systemBackground
-
+        
         paywallConfiguration.eventsHandler.didAppear = { [weak self] in
             guard let self else { return }
             self.delegate?.paywallControllerDidAppear(self)
         }
-        
+
         paywallConfiguration.eventsHandler.didDisappear = { [weak self] in
             guard let self else { return }
             self.delegate?.paywallControllerDidDisappear(self)
         }
-        
+
         paywallConfiguration.eventsHandler.didPerformAction = { [weak self] action in
             guard let self else { return }
             self.delegate?.paywallController(self, didPerform: action)
@@ -126,6 +137,16 @@ public final class AdaptyPaywallController: UIViewController {
             self.delegate?.paywallController(self, didPartiallyLoadProducts: failedIds)
         }
 
+        paywallConfiguration.eventsHandler.didFinishWebPaymentNavigation = { [weak self] product, error in
+            guard let self else { return }
+
+            self.delegate?.paywallController(
+                self,
+                didFinishWebPaymentNavigation: product,
+                error: error
+            )
+        }
+
         addSubSwiftUIView(
             AdaptyPaywallView_Internal(
                 showDebugOverlay: showDebugOverlay
@@ -149,7 +170,7 @@ public final class AdaptyPaywallController: UIViewController {
         super.viewDidAppear(animated)
 
         Log.ui.verbose("#\(logId)# viewDidAppear")
-        
+
         paywallConfiguration.reportOnAppear()
     }
 
@@ -157,7 +178,7 @@ public final class AdaptyPaywallController: UIViewController {
         super.viewDidDisappear(animated)
 
         Log.ui.verbose("#\(logId)# viewDidDisappear")
-        
+
         paywallConfiguration.reportOnDisappear()
     }
 }

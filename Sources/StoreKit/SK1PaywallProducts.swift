@@ -21,6 +21,7 @@ extension Adapty {
         )
         .compactMap { sk1Product in
             let vendorId = sk1Product.productIdentifier
+
             guard let reference = paywall.products.first(where: { $0.vendorId == vendorId }) else {
                 return nil
             }
@@ -28,9 +29,11 @@ extension Adapty {
             return AdaptySK1PaywallProductWithoutDeterminingOffer(
                 skProduct: sk1Product,
                 adaptyProductId: reference.adaptyProductId,
+                paywallProductIndex: reference.paywallProductIndex,
                 variationId: paywall.variationId,
-                paywallABTestName: paywall.abTestName,
-                paywallName: paywall.name
+                paywallABTestName: paywall.placement.abTestName,
+                paywallName: paywall.name,
+                webPaywallBaseUrl: paywall.webPaywallBaseUrl
             )
         }
     }
@@ -38,11 +41,13 @@ extension Adapty {
     func getSK1PaywallProduct(
         vendorProductId: String,
         adaptyProductId: String,
+        paywallProductIndex: Int,
         subscriptionOfferIdentifier: AdaptySubscriptionOffer.Identifier?,
         variationId: String,
         paywallABTestName: String,
         paywallName: String,
-        productsManager: SK1ProductsManager
+        productsManager: SK1ProductsManager,
+        webPaywallBaseUrl: URL?
     ) async throws -> AdaptySK1PaywallProduct {
         let sk1Product = try await productsManager.fetchSK1Product(id: vendorProductId, fetchPolicy: .returnCacheDataElseLoad)
 
@@ -51,7 +56,7 @@ extension Adapty {
                 if let offer = sk1Product.subscriptionOffer(by: subscriptionOfferIdentifier) {
                     offer
                 } else {
-                    throw StoreKitManagerError.invalidOffer("StoreKit1 product dont have offer id: `\(subscriptionOfferIdentifier.identifier ?? "nil")` with type:\(subscriptionOfferIdentifier.asOfferType.rawValue) ").asAdaptyError
+                    throw StoreKitManagerError.invalidOffer("StoreKit1 product don't have offer id: `\(subscriptionOfferIdentifier.identifier ?? "nil")` with type:\(subscriptionOfferIdentifier.asOfferType.rawValue) ").asAdaptyError
                 }
             } else {
                 nil
@@ -60,10 +65,12 @@ extension Adapty {
         return AdaptySK1PaywallProduct(
             skProduct: sk1Product,
             adaptyProductId: adaptyProductId,
+            paywallProductIndex: paywallProductIndex,
             subscriptionOffer: subscriptionOffer,
             variationId: variationId,
             paywallABTestName: paywallABTestName,
-            paywallName: paywallName
+            paywallName: paywallName,
+            webPaywallBaseUrl: webPaywallBaseUrl
         )
     }
 
@@ -131,10 +138,12 @@ extension Adapty {
             AdaptySK1PaywallProduct(
                 skProduct: $0.product,
                 adaptyProductId: $0.reference.adaptyProductId,
+                paywallProductIndex: $0.reference.paywallProductIndex,
                 subscriptionOffer: $0.offer,
                 variationId: paywall.variationId,
-                paywallABTestName: paywall.abTestName,
-                paywallName: paywall.name
+                paywallABTestName: paywall.placement.abTestName,
+                paywallName: paywall.name,
+                webPaywallBaseUrl: paywall.webPaywallBaseUrl
             )
         }
     }

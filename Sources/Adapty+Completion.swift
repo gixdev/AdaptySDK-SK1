@@ -167,12 +167,29 @@ public extension Adapty {
     nonisolated static func getPaywall(
         placementId: String,
         locale: String? = nil,
-        fetchPolicy: AdaptyPaywall.FetchPolicy = .default,
+        fetchPolicy: AdaptyPlacementFetchPolicy = .default,
         loadTimeout: TimeInterval? = nil,
         _ completion: @escaping AdaptyResultCompletion<AdaptyPaywall>
     ) {
         withCompletion(completion) {
             try await getPaywall(
+                placementId: placementId,
+                locale: locale,
+                fetchPolicy: fetchPolicy,
+                loadTimeout: loadTimeout
+            )
+        }
+    }
+
+    nonisolated static func getOnboarding(
+        placementId: String,
+        locale: String? = nil,
+        fetchPolicy: AdaptyPlacementFetchPolicy = .default,
+        loadTimeout: TimeInterval? = nil,
+        _ completion: @escaping AdaptyResultCompletion<AdaptyOnboarding>
+    ) {
+        withCompletion(completion) {
+            try await getOnboarding(
                 placementId: placementId,
                 locale: locale,
                 fetchPolicy: fetchPolicy,
@@ -194,11 +211,26 @@ public extension Adapty {
     nonisolated static func getPaywallForDefaultAudience(
         placementId: String,
         locale: String? = nil,
-        fetchPolicy: AdaptyPaywall.FetchPolicy = .default,
+        fetchPolicy: AdaptyPlacementFetchPolicy = .default,
         _ completion: @escaping AdaptyResultCompletion<AdaptyPaywall>
     ) {
         withCompletion(completion) {
             try await getPaywallForDefaultAudience(
+                placementId: placementId,
+                locale: locale,
+                fetchPolicy: fetchPolicy
+            )
+        }
+    }
+
+    nonisolated static func getOnboardingForDefaultAudience(
+        placementId: String,
+        locale: String? = nil,
+        fetchPolicy: AdaptyPlacementFetchPolicy = .default,
+        _ completion: @escaping AdaptyResultCompletion<AdaptyOnboarding>
+    ) {
+        withCompletion(completion) {
+            try await getOnboardingForDefaultAudience(
                 placementId: placementId,
                 locale: locale,
                 fetchPolicy: fetchPolicy
@@ -215,12 +247,12 @@ public extension Adapty {
     /// - Parameters:
     ///   - fileURL:
     ///   - completion: Result callback.
-    nonisolated static func setFallbackPaywalls(
+    nonisolated static func setFallback(
         fileURL url: URL,
         _ completion: AdaptyErrorCompletion? = nil
     ) {
         withCompletion(completion) {
-            try await setFallbackPaywalls(fileURL: url)
+            try await setFallback(fileURL: url)
         }
     }
 
@@ -262,6 +294,42 @@ public extension Adapty {
     ) {
         withCompletion(completion) {
             try await makePurchase(product: product)
+        }
+    }
+
+    nonisolated static func openWebPaywall(
+        for product: AdaptyPaywallProduct,
+        _ completion: AdaptyErrorCompletion?
+    ) {
+        withCompletion(completion) {
+            try await openWebPaywall(for: product)
+        }
+    }
+
+    nonisolated static func openWebPaywall(
+        for paywall: AdaptyPaywall,
+        _ completion: AdaptyErrorCompletion?
+    ) {
+        withCompletion(completion) {
+            try await openWebPaywall(for: paywall)
+        }
+    }
+
+    nonisolated static func createWebPaywallUrl(
+        for product: AdaptyPaywallProduct,
+        _ completion: @escaping AdaptyResultCompletion<URL>
+    ) {
+        withCompletion(completion) {
+            try await createWebPaywallUrl(for: product)
+        }
+    }
+
+    nonisolated static func createWebPaywallUrl(
+        for paywall: AdaptyPaywall,
+        _ completion: @escaping AdaptyResultCompletion<URL>
+    ) {
+        withCompletion(completion) {
+            try await createWebPaywallUrl(for: paywall)
         }
     }
 
@@ -459,7 +527,14 @@ public extension Adapty {
             try await logShowOnboarding(params)
         }
     }
-    
+
+    /// Call this method to update the current user's refund data consent.
+    ///
+    /// Read more on the [Adapty Documentation](https://adapty.io/docs/refund-saver#obtain-user-consent)
+    ///
+    /// - Parameters:
+    ///   - consent: `Bool` value wehter user gave the consent or not.
+    ///   - completion: Result callback.
     nonisolated static func updateCollectingRefundDataConsent(
         _ consent: Bool,
         _ completion: AdaptyErrorCompletion? = nil
@@ -468,7 +543,14 @@ public extension Adapty {
             try await updateCollectingRefundDataConsent(consent)
         }
     }
-    
+
+    /// Call this method to set the refund preference individually for current user.
+    ///
+    /// Read more on the [Adapty Documentation](https://adapty.io/docs/refund-saver#set-refund-behavior-for-a-specific-user-in-the-dashboard)
+    ///
+    /// - Parameters:
+    ///   - refundPreference: ``AdaptyRefundPreference`` value.
+    ///   - completion: Result callback.
     nonisolated static func updateRefundPreference(
         _ refundPreference: AdaptyRefundPreference,
         _ completion: AdaptyErrorCompletion? = nil
