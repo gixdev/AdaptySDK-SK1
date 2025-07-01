@@ -13,7 +13,7 @@ import UIKit
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *)
 @MainActor
 public final class AdaptyOnboardingController: UIViewController {
-    public var id: String { onboardingView.uid.uuidString }
+    public var id: String { onboardingView.id }
     public var onboarding: AdaptyOnboarding { onboardingView.configuration.viewModel.onboarding }
 
     private let onboardingView: AdaptyOnboardingUIView
