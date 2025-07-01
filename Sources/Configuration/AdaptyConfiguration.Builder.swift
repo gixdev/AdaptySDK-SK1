@@ -38,7 +38,7 @@ extension AdaptyConfiguration {
             ),
             logLevel: builder.logLevel,
             crossPlatformSDK: builder.crossPlatformSDK,
-            storeKitVersion: builder.storeKitVersion ?? .v2,
+            storeKitVersion: builder.storeKitVersion ?? .v2
         )
     }
 
